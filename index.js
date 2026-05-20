@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const app = express();
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 dotenv.config();
 app.use(express.json());
@@ -22,8 +24,6 @@ const verify = async (req, res, next) => {
   next();
 };
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 const uri = process.env.DB_URI;
 
 const client = new MongoClient(uri, {
@@ -55,7 +55,6 @@ async function run() {
       const query = {
         _id: new ObjectId(id),
       };
-      console.log(query);
       const result = await userCollection.findOne(query);
       res.send(result);
     });
@@ -63,9 +62,5 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
-app.get("/", verify, (req, res) => {
-  res.send("Hello world");
-});
 
 app.listen(process.env.PORT, console.log(`${process.env.PORT} is listening`));
