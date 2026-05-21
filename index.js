@@ -58,6 +58,12 @@ async function run() {
       const result = await userCollection.findOne(query);
       res.send(result);
     });
+
+    app.post("/add-users", verify, async (req, res) => {
+      const newUser = req.body;
+      const result = await userCollection.insertOne(newUser);
+      res.send(result);
+    });
   } finally {
   }
 }
