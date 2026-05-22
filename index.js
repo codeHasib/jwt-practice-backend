@@ -74,8 +74,17 @@ async function run() {
       res.send(deletedOne);
     });
 
-    
-
+    app.patch("/users/:id", verify, async (req, res) => {
+      const id = req.params.id;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const updatedUser = req.body;
+      const result = await userCollection.updateOne(query, {
+        $set: { updatedUser },
+      });
+      res.send(result);
+    });
   } finally {
   }
 }
