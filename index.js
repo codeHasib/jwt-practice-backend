@@ -21,6 +21,7 @@ const verify = async (req, res, next) => {
   if (!payload) {
     return res.status(401).send({ message: "unauthorized" });
   }
+  req.user = payload;
   next();
 };
 
@@ -60,8 +61,9 @@ async function run() {
     });
 
     app.post("/add-users", verify, async (req, res) => {
+      const ownerId = req.user.id;
       const newUser = req.body;
-      const result = await userCollection.insertOne(newUser);
+      const result = await userCollection.insertOne({ ...newUser, ownerId });
       res.send(result);
     });
 
@@ -76,13 +78,23 @@ async function run() {
 
     app.patch("/users/:id", verify, async (req, res) => {
       const id = req.params.id;
+      const userId = req.user.id;
+
       const query = {
         _id: new ObjectId(id),
       };
+
+      const existingUser = await userCollection.findOne(query);
+
+      if (userId !== existingUser.ownerId) {
+        return res.status(401).send("Not allowed");
+      }
+
       const updatedUser = req.body;
       const result = await userCollection.updateOne(query, {
-        $set: { updatedUser },
+        $set: updatedUser,
       });
+      console.log(result);
       res.send(result);
     });
   } finally {
